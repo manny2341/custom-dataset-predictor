@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configure Model — Custom Dataset Predictor</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Custom Dataset Predictor</h1>
+  </header>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step done">1. Upload CSV</div>
+    <div class="step active">2. Pick Target</div>
+    <div class="step">3. Train Model</div>
+    <div class="step">4. Predict</div>
+  </div>
+
+  <div class="banner info">
+    CSV loaded — <strong>{{ shape[0] }} rows</strong> and <strong>{{ shape[1] }} columns</strong>
+  </div>
+
+  <!-- Data Preview -->
+  <div class="section-title">Data Preview (first 5 rows)</div>
+  <div class="table-scroll">
+    {{ preview | safe }}
+  </div>
+
+  <!-- Target Column Picker -->
+  <div class="section-title" style="margin-top:28px">Choose the Target Column</div>
+  <p class="hint">The target is the column you want the model to <strong>predict</strong>. All other columns will be used as inputs.</p>
+
+  <form action="/train" method="POST">
+    <div class="field">
+      <label>Target Column</label>
+      <select name="target" required>
+        <option value="" disabled selected>Select a column</option>
+        {% for col in columns %}
+          <option value="{{ col }}">{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <button type="submit" class="btn" style="margin-top:24px">Train Model</button>
+  </form>
+
+  <a href="/" class="back-link">← Upload a different file</a>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Results — Custom Dataset Predictor</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Custom Dataset Predictor</h1>
+  </header>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step done">1. Upload CSV</div>
+    <div class="step done">2. Pick Target</div>
+    <div class="step done">3. Train Model</div>
+    <div class="step active">4. Predict</div>
+  </div>
+
+  <!-- Model Info -->
+  <div class="model-card">
+    <div class="model-card-row">
+      <span class="label">Target Column</span>
+      <span class="value">{{ info.target }}</span>
+    </div>
+    <div class="model-card-row">
+      <span class="label">Problem Type</span>
+      <span class="value type-badge {{ info.problem_type }}">{{ info.problem_type | capitalize }}</span>
+    </div>
+    <div class="model-card-row">
+      <span class="label">{{ info.metric_name }}</span>
+      <span class="value metric">{{ info.metric_value }}</span>
+    </div>
+    {% if info.mae %}
+    <div class="model-card-row">
+      <span class="label">Mean Absolute Error</span>
+      <span class="value">{{ info.mae }}</span>
+    </div>
+    {% endif %}
+    <div class="model-card-row">
+      <span class="label">Training Samples</span>
+      <span class="value">{{ info.n_train }}</span>
+    </div>
+    <div class="model-card-row">
+      <span class="label">Testing Samples</span>
+      <span class="value">{{ info.n_test }}</span>
+    </div>
+    <div class="model-card-row">
+      <span class="label">Algorithm</span>
+      <span class="value">Random Forest</span>
+    </div>
+  </div>
+
+  <!-- Prediction Result -->
+  {% if prediction is defined %}
+    <div class="banner {{ 'success' if info.problem_type == 'classification' else 'info' }}">
+      <p class="result-label">Prediction for <strong>{{ info.target }}</strong></p>
+      <div class="price-tag">{{ prediction }}</div>
+      {% if confidence %}
+        <p class="result-sub">Model confidence: <strong>{{ confidence }}</strong></p>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <!-- Prediction Form -->
+  <div class="section-title">Make a Prediction</div>
+  <p class="hint">Fill in the values below and click predict.</p>
+
+  <!-- Store sample data safely in JS — avoids quote conflicts in onclick -->
+  <script>
+    const SAMPLES = {{ info.sample_rows | tojson }};
+
+    function fillExample(label) {
+      const data = SAMPLES[label];
+      if (!data) return;
+      for (const [key, val] of Object.entries(data)) {
+        const el = document.getElementById('field_' + key);
+        if (el) el.value = val;
+      }
+      document.getElementById('predForm').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function clearForm() {
+      document.querySelectorAll('#predForm input, #predForm select')
+              .forEach(el => el.value = '');
+    }
+  </script>
+
+  <!-- Quick Fill Buttons -->
+  {% if info.sample_rows %}
+  <div class="quick-fill">
+    <p class="quick-fill-label">Quick fill with a real example from your data:</p>
+    <div class="quick-fill-btns">
+      {% for label in info.sample_rows %}
+        <button type="button" class="fill-btn" onclick="fillExample('{{ label }}')">
+          Fill: {{ label }}
+        </button>
+      {% endfor %}
+      <button type="button" class="fill-btn clear-btn" onclick="clearForm()">
+        Clear All
+      </button>
+    </div>
+  </div>
+  {% endif %}
+
+  <form action="/predict" method="POST" id="predForm">
+    <div class="form-grid">
+      {% for col in info.feature_cols %}
+        <div class="field">
+          <label>{{ col }}</label>
+          {% if col in info.cat_cols %}
+            <select name="{{ col }}" id="field_{{ col }}">
+              <option value="" disabled selected>Select</option>
+              {% for opt in info.cat_options[col] %}
+                <option value="{{ opt }}" {% if user_input is defined and user_input[col] == opt %}selected{% endif %}>{{ opt }}</option>
+              {% endfor %}
+            </select>
+          {% else %}
+            <input type="number" step="any" name="{{ col }}" id="field_{{ col }}"
+                   placeholder="Enter number"
+                   value="{{ user_input[col] if user_input is defined and user_input[col] is not none else '' }}"/>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    <button type="submit" class="btn">Make Prediction</button>
+  </form>
+
+  <a href="/" class="back-link">← Upload a new dataset</a>
+
+</div>
+</body>
+</html>

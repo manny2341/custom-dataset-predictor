@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Custom Dataset Predictor</title>
+  <link rel="stylesheet" href="/static/style.css"/>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <h1>Custom Dataset Predictor</h1>
+    <p class="subtitle">Upload any CSV file and we will automatically train a machine learning model on it.</p>
+  </header>
+
+  <!-- Steps -->
+  <div class="steps">
+    <div class="step active">1. Upload CSV</div>
+    <div class="step">2. Pick Target</div>
+    <div class="step">3. Train Model</div>
+    <div class="step">4. Predict</div>
+  </div>
+
+  {% if error %}
+    <div class="banner error">{{ error }}</div>
+  {% endif %}
+
+  <div class="upload-box">
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+      <div class="upload-icon">📂</div>
+      <p class="upload-label">Choose a CSV file from your computer</p>
+      <input type="file" name="csvfile" accept=".csv" required class="file-input" id="fileInput"/>
+      <label for="fileInput" class="file-btn">Browse File</label>
+      <p class="file-name" id="fileName">No file chosen</p>
+      <button type="submit" class="btn">Upload & Continue</button>
+    </form>
+  </div>
+
+  <div class="info-box">
+    <h3>What this app does:</h3>
+    <ul>
+      <li>You upload <strong>any CSV</strong> file with data</li>
+      <li>You pick the column you want to <strong>predict</strong></li>
+      <li>The app automatically trains a <strong>Random Forest model</strong></li>
+      <li>You can then enter values and get a <strong>prediction instantly</strong></li>
+    </ul>
+    <h3>Example datasets to try:</h3>
+    <ul>
+      <li>Heart disease data (predict: target)</li>
+      <li>Titanic survival data (predict: Survived)</li>
+      <li>Iris flower data (predict: species)</li>
+      <li>Any data you have!</li>
+    </ul>
+  </div>
+
+</div>
+
+<script>
+  document.getElementById('fileInput').addEventListener('change', function() {
+    document.getElementById('fileName').textContent = this.files[0]?.name || 'No file chosen';
+  });
+</script>
+</body>
+</html>
